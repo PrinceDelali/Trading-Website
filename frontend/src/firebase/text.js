@@ -1,2 +1,2 @@
-import { auth } from './temp';
+import { auth } from './Config';
 console.log('Firebase Auth:', auth);
