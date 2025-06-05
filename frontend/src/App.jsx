@@ -11,7 +11,13 @@ import {
   signOut,
   updateProfile
 } from 'firebase/auth';
-import { auth } from './firebase/Config.js'; // Your Firebase config file
+import { auth } from './firebase/Config.js';
+
+// Import all page components
+import Dashboard from './Components/Dashboard.jsx';
+import UploadAnalysis from './Components/UplaodAnalysis.jsx';
+import TradingHistory from './Components/TradingHistory.jsx';
+import Settings from './Components/Settings.jsx';
 
 // Initialize Google provider
 const googleProvider = new GoogleAuthProvider();
@@ -31,7 +37,7 @@ export default function App() {
       setAuthLoading(false);
       if (user) {
         console.log('User signed in:', user.email);
-        setCurrentPage('dashboard'); // Redirect to dashboard after login
+        setCurrentPage('dashboard');
       }
     });
 
@@ -54,10 +60,8 @@ export default function App() {
     setLoading(true);
     setError('');
     try {
-      // Create user account
       const result = await createUserWithEmailAndPassword(auth, email, password);
       
-      // Update user profile with name
       await updateProfile(result.user, {
         displayName: `${firstName} ${lastName}`
       });
@@ -226,6 +230,42 @@ export default function App() {
               Sign In
             </button>
           </div>
+
+          {/* Demo Navigation - Remove in production */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-12 p-6 bg-black/40 backdrop-blur-sm rounded-xl border border-white/20">
+              <h3 className="text-white font-semibold mb-4">🔧 Demo Navigation (Development Only)</h3>
+              <div className="flex flex-wrap gap-3 justify-center">
+                <button
+                  onClick={() => setCurrentPage('dashboard')}
+                  className="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30 transition-colors"
+                >
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => setCurrentPage('upload')}
+                  className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
+                >
+                  Upload Analysis
+                </button>
+                <button
+                  onClick={() => setCurrentPage('history')}
+                  className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors"
+                >
+                  Trading History
+                </button>
+                <button
+                  onClick={() => setCurrentPage('settings')}
+                  className="px-4 py-2 bg-yellow-500/20 text-yellow-400 rounded-lg hover:bg-yellow-500/30 transition-colors"
+                >
+                  Settings
+                </button>
+              </div>
+              <p className="text-gray-400 text-sm mt-3">
+                Note: These buttons bypass authentication for development testing
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -341,7 +381,6 @@ export default function App() {
     const handleSubmit = (e) => {
       e.preventDefault();
       
-      // Validation
       if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
         setError('Please fill in all required fields');
         return;
@@ -552,33 +591,13 @@ export default function App() {
     );
   };
 
-  // Dashboard Component (placeholder)
-  const Dashboard = () => (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-4">
-      <div className="bg-gray-900/60 backdrop-blur-xl rounded-2xl p-8 border border-emerald-500/20 shadow-2xl w-full max-w-2xl">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Welcome to ForexAI Pro!</h2>
-          <p className="text-gray-400 mb-6">You're successfully signed in as {user?.email}</p>
-          <p className="text-gray-300 mb-8">Display Name: {user?.displayName || 'Not set'}</p>
-          
-          <button
-            onClick={handleSignOut}
-            className="px-6 py-3 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-colors"
-          >
-            Sign Out
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
   // Show loading spinner while checking auth state
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-          <p className="text-white">Loading...</p>
+          <p className="text-white">Loading ForexAI Pro...</p>
         </div>
       </div>
     );
@@ -586,9 +605,12 @@ export default function App() {
 
   // Render current page
   const renderCurrentPage = () => {
-    if (user && currentPage === 'dashboard') {
-      return <Dashboard />;
-    }
+    // For authenticated users, create a mock user object if needed for demo
+    const demoUser = user || { 
+      displayName: 'Demo Trader', 
+      email: 'demo@forexaipro.com',
+      uid: 'demo-user-123'
+    };
 
     switch (currentPage) {
       case 'welcome':
@@ -600,7 +622,13 @@ export default function App() {
       case 'forgot':
         return <ForgotPasswordPage />;
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard user={demoUser} onSignOut={handleSignOut} onNavigate={setCurrentPage} />;
+      case 'upload':
+        return <UploadAnalysis user={demoUser} onNavigate={setCurrentPage} onSignOut={handleSignOut} />;
+      case 'history':
+        return <TradingHistory user={demoUser} onNavigate={setCurrentPage} onSignOut={handleSignOut} />;
+      case 'settings':
+        return <Settings user={demoUser} onNavigate={setCurrentPage} onSignOut={handleSignOut} />;
       default:
         return <WelcomePage />;
     }
