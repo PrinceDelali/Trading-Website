@@ -11,7 +11,7 @@ import {
   signOut,
   updateProfile
 } from 'firebase/auth';
-import { auth } from './firebase/temp.js';
+import { auth } from './firebase/config.js';
 
 // Import all page components
 import Dashboard from './Components/Dashboard.jsx';
