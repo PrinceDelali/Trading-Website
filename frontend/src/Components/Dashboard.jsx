@@ -35,6 +35,35 @@ import {
   Info
 } from 'lucide-react';
 
+const STOCK_SYMBOLS = ['AAPL', 'TSLA', 'GOOGL', 'MSFT', 'NVDA', 'AMZN'];
+
+const CandlestickBar = React.memo((props) => {
+  const { payload, x, y, width, height } = props;
+  if (!payload) return null;
+
+  const { open, high, low, close, isGreen } = payload;
+  const fillColor = isGreen ? '#10b981' : '#ef4444';
+  const strokeColor = isGreen ? '#059669' : '#dc2626';
+  const bodyWidth = Math.max(width * 0.7, 3);
+  const bodyX = x + (width - bodyWidth) / 2;
+  const highY = y;
+  const lowY = y + height;
+  const priceRange = Math.max(high - low, 1e-9);
+  const openY = y + ((high - open) / priceRange) * height;
+  const closeY = y + ((high - close) / priceRange) * height;
+  const bodyTop = Math.min(openY, closeY);
+  const bodyBottom = Math.max(openY, closeY);
+  const bodyHeight = Math.max(Math.abs(bodyBottom - bodyTop), 1);
+  const wickX = x + width / 2;
+
+  return (
+    <g>
+      <line x1={wickX} y1={highY} x2={wickX} y2={lowY} stroke={strokeColor} strokeWidth={1} />
+      <rect x={bodyX} y={bodyTop} width={bodyWidth} height={bodyHeight} fill={fillColor} stroke={strokeColor} strokeWidth={1} opacity={isGreen ? 0.8 : 1} />
+    </g>
+  );
+});
+
 const Dashboard = ({ user = { displayName: 'Demo Trader', email: 'demo@trader.com' }, onSignOut = () => {}, onNavigate = () => {} }) => {
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -853,7 +882,7 @@ const Dashboard = ({ user = { displayName: 'Demo Trader', email: 'demo@trader.co
                   return null;
                 }}
               />
-              <Bar dataKey="wickTop" shape={<CandlestickBar />} />
+              <Bar dataKey="wickTop" shape={<CandlestickBar />} isAnimationActive={false} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -877,6 +906,7 @@ const Dashboard = ({ user = { displayName: 'Demo Trader', email: 'demo@trader.co
                   stroke="#6366f1"
                   strokeWidth={1}
                   fill="url(#volumeGradient)"
+                  isAnimationActive={false}
                   dot={false}
                 />
               </AreaChart>
@@ -995,7 +1025,7 @@ const Dashboard = ({ user = { displayName: 'Demo Trader', email: 'demo@trader.co
                   return null;
                 }}
               />
-              <Bar dataKey="wickTop" shape={<CandlestickBar />} />
+              <Bar dataKey="wickTop" shape={<CandlestickBar />} isAnimationActive={false} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
